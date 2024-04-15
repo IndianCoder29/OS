@@ -1,0 +1,46 @@
+//check module
+//module load mpi;
+//mpirun echo hi;
+//mpirun -np4 echo hi;
+
+//run program using
+//mpicc program-name.c
+//mpirun a.out
+//mpirun -np 10 a.out
+
+
+#include <mpi.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #define ARRAY_SIZE 1000
+ int main(int argc, char* argv[]) {
+    int rank, size, i;
+    int array[ARRAY_SIZE];
+    int local_max, global_max;
+    // Initialize the MPI environment
+    MPI_Init(&argc, &argv);
+    // Get the number of processes
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    // Get the rank of the process
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    // Seed the random number generator to get different results each time
+    srand(rank + time(NULL));
+    // Generate random numbers in each process
+    for(i = 0; i < ARRAY_SIZE; i++) {
+        array[i] = rand() % 100;
+        if(i == 0 || array[i] > local_max) {
+            local_max = array[i];
+        }
+    }
+    // Print the local max of each process
+    printf("Local max for process %d is %d\n", rank, local_max);
+    // Reduce all of the local maxima into the global max
+    MPI_Reduce(&local_max, &global_max, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+    // Print the global max once at the root
+    if (rank == 0) {
+        printf("Global max = %d\n", global_max);
+    }
+    // Finalize the MPI environment
+    MPI_Finalize();
+    return 0;
+ }

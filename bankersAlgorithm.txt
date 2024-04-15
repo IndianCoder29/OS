@@ -1,0 +1,118 @@
+#include <stdio.h>
+
+int count = 0;
+#define N 5
+#define M 3
+
+// Function to initialize matrices
+// Function to initialize matrices
+void initializeMatrices(int alloc[N][M], int max[N][M], int avail[M], int need[N][M]) {
+    // Allocation Matrix
+    int allocData[N][M] = {{0, 1, 0},{2, 0, 0},{3, 0, 2},{2, 1, 1},{0, 0, 2}};
+
+    // MAX Matrix
+    int maxData[N][M] = {{7, 5, 3},{3, 2, 2},{9, 0, 2},{2, 2, 2},{4, 3, 3}};
+
+    // Available Resources
+    int availData[M] = {3, 3, 2};
+
+    // Initialize matrices and available resources
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            alloc[i][j] = allocData[i][j];
+            max[i][j] = maxData[i][j];
+            need[i][j] = max[i][j] - alloc[i][j];
+        }
+    }
+    for (int i = 0; i < M; i++) {
+        avail[i] = availData[i];
+    }
+}
+
+// Function to print matrices
+void printMatrices(int alloc[N][M], int max[N][M], int need[N][M], int avail[M]) {
+    printf("\nState %d\n", count);
+    count++;
+    printf("Process\tAllocation\tMax\tNeed\tAvailable\n");
+    for (int i = 0; i < N; i++) {
+        printf("P%d\t", i);
+        for (int j = 0; j < M; j++) {
+            printf("%d ", alloc[i][j]);
+        }
+        printf("\t\t");
+        for (int j = 0; j < M; j++) {
+            printf("%d ", max[i][j]);
+        }
+        printf("\t");
+        for (int j = 0; j < M; j++) {
+            printf("%d ", need[i][j]);
+        }
+        if (i == 0) {
+            printf("\t");
+            for (int j = 0; j < M; j++) {
+                printf("%d ", avail[j]);
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Function to check if the system is in a safe state
+int isSafeState(int alloc[N][M], int need[N][M], int avail[M], int ans[N],int max[N][M]) {
+    int f[N] = {0};
+    int ind = 0;
+
+    for (int k = 0; k < N; k++) {
+        for (int i = 0; i < N; i++) {
+            if (!f[i]) {
+                int flag = 0;
+                for (int j = 0; j < M; j++) {
+                    if (need[i][j] > avail[j]) {
+                        flag = 1;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    ans[ind++] = i;
+                    for (int y = 0; y < M; y++) {
+                        avail[y] += alloc[i][y];
+                    }
+                    f[i] = 1;
+                }
+            }
+        }
+    printMatrices(alloc, max, need, avail);
+    }
+    // Check if system is in safe state
+    for (int i = 0; i < N; i++) {
+        if (!f[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int main() {
+    int alloc[N][M], max[N][M], avail[M], need[N][M];
+    int ans[N];
+
+    // Initialize matrices
+    initializeMatrices(alloc, max, avail, need);
+
+    // Print initial state of matrices
+    printMatrices(alloc, max, need, avail);
+
+    // Check if system is in safe state
+    if (isSafeState(alloc, need, avail, ans,max)) {
+        printf("The system is in a safe state. Safe sequence: ");
+        for (int i = 0; i < N - 1; i++) {
+            printf(" P%d ->", ans[i]);
+        }
+        printf(" P%d\n", ans[N - 1]);
+    } else {
+        printf("The system is not in a safe state.\n");
+    }
+
+    return 0;
+}
